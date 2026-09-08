@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 
 authRouter.post("/signup", async (req, res) => {
     try {
+        console.log("Server is successfully listening on port 3232...");
         // Validation of data
         validateSignUpData(req);
 

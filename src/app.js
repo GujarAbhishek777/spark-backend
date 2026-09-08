@@ -19,18 +19,18 @@ app.use(express.json());
 app.use(cookieParser());
 
 
-// const authRouter = require("./routes/auth");
-// const profileRouter = require("./routes/profile");
-// const requestRouter = require("./routes/request");
-// const userRouter = require("./routes/user");
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
 // const paymentRouter = require("./routes/payment");
 // const initializeSocket = require("./utils/socket");
 // const chatRouter = require("./routes/chat");
 
-// app.use("/", authRouter);
-// app.use("/", profileRouter);
-// app.use("/", requestRouter);
-// app.use("/", userRouter);
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
 // app.use("/", paymentRouter);
 // app.use("/", chatRouter);
 
