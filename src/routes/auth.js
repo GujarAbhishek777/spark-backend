@@ -7,21 +7,20 @@ const bcrypt = require("bcrypt");
 
 authRouter.post("/signup", async (req, res) => {
     try {
-        console.log("Server is successfully listening on port 3232...");
         // Validation of data
         validateSignUpData(req);
 
         const { firstName, lastName, emailId, password } = req.body;
+        const normalizedEmail = emailId.trim().toLowerCase();
 
         // Encrypt the password
         const passwordHash = await bcrypt.hash(password, 10);
-        console.log(passwordHash);
 
         //   Creating a new instance of the User model
         const user = new User({
             firstName,
             lastName,
-            emailId,
+            emailId: normalizedEmail,
             password: passwordHash,
         });
 
@@ -30,22 +29,31 @@ authRouter.post("/signup", async (req, res) => {
 
         res.cookie("token", token, {
             expires: new Date(Date.now() + 8 * 3600000),
+            httpOnly: true,
+            sameSite: "lax",
         });
 
         res.json({ message: "User Added successfully!", data: savedUser });
     } catch (err) {
-        res.status(400).send("ERROR : " + err.message);
+        res.status(400).json({ message: "ERROR : " + err.message });
     }
 });
 
 authRouter.post("/login", async (req, res) => {
     try {
         const { emailId, password } = req.body;
-
-        const user = await User.findOne({ emailId: emailId });
-        if (!user) {
-            throw new Error("Invalid credentials");
+        if (!emailId || !password) {
+            return res.status(400).json({ message: "Email ID and Password are required" });
         }
+
+        const normalizedEmail = emailId.trim().toLowerCase();
+        const user = await User.findOne({ emailId: normalizedEmail });
+
+        if (!user) {
+            console.log(`Login attempt failed: No account registered with email '${normalizedEmail}'`);
+            return res.status(400).json({ message: "Invalid credentials: User not registered. Please Sign Up first!" });
+        }
+
         const isPasswordValid = await user.validatePassword(password);
 
         if (isPasswordValid) {
@@ -53,21 +61,26 @@ authRouter.post("/login", async (req, res) => {
 
             res.cookie("token", token, {
                 expires: new Date(Date.now() + 8 * 3600000),
+                httpOnly: true,
+                sameSite: "lax",
             });
-            res.send(user);
+            res.json({ message: "Login Successful", data: user });
         } else {
-            throw new Error("Invalid credentials");
+            console.log(`Login attempt failed: Password mismatch for email '${normalizedEmail}'`);
+            return res.status(400).json({ message: "Invalid credentials: Password does not match" });
         }
     } catch (err) {
-        res.status(400).send("ERROR : " + err.message);
+        res.status(400).json({ message: "ERROR : " + err.message });
     }
 });
 
 authRouter.post("/logout", async (req, res) => {
     res.cookie("token", null, {
-        expires: new Date(Date.now()),
+        expires: new Date(0),
+        httpOnly: true,
+        sameSite: "lax",
     });
-    res.send("Logout Successful!!");
+    res.json({ message: "Logout Successful!!" });
 });
 
 module.exports = authRouter;

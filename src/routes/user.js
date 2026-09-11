@@ -55,7 +55,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
     }
 });
 
-userRouter.get("/feed", userAuth, async (req, res) => {
+const getFeedHandler = async (req, res) => {
     try {
         const loggedInUser = req.user;
 
@@ -88,5 +88,8 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
-});
+};
+
+userRouter.get("/feed", userAuth, getFeedHandler);
+userRouter.get("/user/feed", userAuth, getFeedHandler);
 module.exports = userRouter;

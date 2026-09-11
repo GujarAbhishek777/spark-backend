@@ -3,24 +3,24 @@ const User = require("../models/user");
 
 const userAuth = async (req, res, next) => {
     try {
-        const { token } = req.cookies;
+        const token = req.cookies?.token || req.headers.authorization?.replace("Bearer ", "");
         if (!token) {
             return res.status(401).send("Please Login!");
         }
 
-        const decodedObj = await jwt.verify(token, process.env.JWT_SECRET);
+        const decodedObj = jwt.verify(token, process.env.JWT_SECRET || "Spark@123");
 
         const { _id } = decodedObj;
 
         const user = await User.findById(_id);
         if (!user) {
-            throw new Error("User not found");
+            return res.status(401).send("User not found");
         }
 
         req.user = user;
         next();
     } catch (err) {
-        res.status(400).send("ERROR: " + err.message);
+        res.status(401).send("ERROR: " + err.message);
     }
 };
 
