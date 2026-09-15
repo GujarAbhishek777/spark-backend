@@ -4,6 +4,7 @@ const authRouter = express.Router();
 const { validateSignUpData } = require("../utils/validation");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const validator = require("validator");
 
 authRouter.post("/signup", async (req, res) => {
     try {
@@ -81,6 +82,36 @@ authRouter.post("/logout", async (req, res) => {
         sameSite: "lax",
     });
     res.json({ message: "Logout Successful!!" });
+});
+
+authRouter.post("/password/reset", async (req, res) => {
+    try {
+        const { emailId, newPassword } = req.body;
+        if (!emailId || !newPassword) {
+            return res.status(400).json({ message: "Email ID and New Password are required!" });
+        }
+
+        if (!validator.isStrongPassword(newPassword)) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters long and contain uppercase, lowercase, numbers & symbols!",
+            });
+        }
+
+        const normalizedEmail = emailId.trim().toLowerCase();
+        const user = await User.findOne({ emailId: normalizedEmail });
+
+        if (!user) {
+            return res.status(404).json({ message: "No account registered with this email address!" });
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        user.password = passwordHash;
+        await user.save();
+
+        res.json({ message: "Password reset successful! You can now log in with your new password." });
+    } catch (err) {
+        res.status(400).json({ message: "ERROR: " + err.message });
+    }
 });
 
 module.exports = authRouter;

@@ -23,7 +23,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
             data: connectionRequests,
         });
     } catch (err) {
-        req.statusCode(400).send("ERROR: " + err.message);
+        res.status(400).json({ message: "ERROR: " + err.message });
     }
 });
 

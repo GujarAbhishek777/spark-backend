@@ -1,5 +1,7 @@
 const express = require("express");
 const profileRouter = express.Router();
+const bcrypt = require("bcrypt");
+const validator = require("validator");
 
 const { userAuth } = require("../middlewares/auth");
 const { validateEditProfileData } = require("../utils/validation");
@@ -34,5 +36,44 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
         res.status(400).send("ERROR : " + err.message);
     }
 });
+
+const passwordUpdateHandler = async (req, res) => {
+    try {
+        const { existingPassword, newPassword } = req.body;
+        const loggedInUser = req.user;
+
+        if (!newPassword) {
+            return res.status(400).json({ message: "New password is required!" });
+        }
+
+        if (!validator.isStrongPassword(newPassword)) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters with uppercase, lowercase, numbers & symbols!",
+            });
+        }
+
+        if (existingPassword) {
+            const isPasswordValid = await loggedInUser.validatePassword(existingPassword);
+            if (!isPasswordValid) {
+                return res.status(400).json({ message: "Current password is incorrect!" });
+            }
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        loggedInUser.password = passwordHash;
+
+        await loggedInUser.save();
+
+        res.json({
+            message: "Password updated successfully!",
+        });
+    } catch (err) {
+        res.status(400).json({ message: "ERROR: " + err.message });
+    }
+};
+
+profileRouter.patch("/profile/password", userAuth, passwordUpdateHandler);
+profileRouter.post("/profile/password", userAuth, passwordUpdateHandler);
+profileRouter.put("/profile/password", userAuth, passwordUpdateHandler);
 
 module.exports = profileRouter;
