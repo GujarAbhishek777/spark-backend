@@ -11,6 +11,7 @@ require("dotenv").config();
 
 const allowedOrigins = [
     "https://spark.scalewithabhi.in",
+    "https://sparkv1.scalewithabhi.in",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:3000",
@@ -31,7 +32,11 @@ const corsOptions = {
         if (!origin) return callback(null, true);
 
         const cleanOrigin = origin.replace(/\/$/, "");
-        if (allowedOrigins.includes(cleanOrigin) || allowedOrigins.includes(origin)) {
+        const isAllowed = allowedOrigins.includes(cleanOrigin) || 
+                          allowedOrigins.includes(origin) ||
+                          /\.scalewithabhi\.in$/.test(cleanOrigin);
+
+        if (isAllowed) {
             callback(null, true);
         } else {
             callback(null, false);
@@ -39,11 +44,12 @@ const corsOptions = {
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
     optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
