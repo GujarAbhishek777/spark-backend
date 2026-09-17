@@ -32,9 +32,9 @@ const corsOptions = {
         if (!origin) return callback(null, true);
 
         const cleanOrigin = origin.replace(/\/$/, "");
-        const isAllowed = allowedOrigins.includes(cleanOrigin) || 
-                          allowedOrigins.includes(origin) ||
-                          /\.scalewithabhi\.in$/.test(cleanOrigin);
+        const isAllowed = allowedOrigins.includes(cleanOrigin) ||
+            allowedOrigins.includes(origin) ||
+            /\.scalewithabhi\.in$/.test(cleanOrigin);
 
         if (isAllowed) {
             callback(null, true);
@@ -63,9 +63,16 @@ const userRouter = require("./routes/user");
 // const chatRouter = require("./routes/chat");
 
 app.use("/", authRouter);
+app.use("/api", authRouter);
+
 app.use("/", profileRouter);
+app.use("/api", profileRouter);
+
 app.use("/", requestRouter);
+app.use("/api", requestRouter);
+
 app.use("/", userRouter);
+app.use("/api", userRouter);
 // app.use("/", paymentRouter);
 // app.use("/", chatRouter);
 
