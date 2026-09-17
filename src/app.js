@@ -9,47 +9,21 @@ require("dotenv").config();
 
 // require("./utils/cronjob");
 
-const allowedOrigins = [
-    "https://spark.scalewithabhi.in",
-    "https://sparkv1.scalewithabhi.in",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:3000",
-];
-
-if (process.env.CLIENT_URL) {
-    process.env.CLIENT_URL.split(",").forEach((url) => {
-        const trimmed = url.trim().replace(/\/$/, "");
-        if (trimmed && !allowedOrigins.includes(trimmed)) {
-            allowedOrigins.push(trimmed);
-        }
-    });
-}
-
-const corsOptions = {
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, cURL, Postman)
-        if (!origin) return callback(null, true);
-
-        const cleanOrigin = origin.replace(/\/$/, "");
-        const isAllowed = allowedOrigins.includes(cleanOrigin) ||
-            allowedOrigins.includes(origin) ||
-            /\.scalewithabhi\.in$/.test(cleanOrigin);
-
-        if (isAllowed) {
-            callback(null, true);
-        } else {
-            callback(null, false);
-        }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-    optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.use(
+    cors({
+        origin: [
+            "https://spark.scalewithabhi.in",
+            "https://sparkv1.scalewithabhi.in",
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:3000",
+        ],
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+        optionsSuccessStatus: 200,
+    })
+);
 app.use(express.json());
 app.use(cookieParser());
 
